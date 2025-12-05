@@ -1,0 +1,53 @@
+#!/bin/sh
+set -e
+
+verbose=true
+debug=false
+force=false
+
+params=""
+
+while (( "$#" )); do
+  case "$1" in
+    -v|--verbose)
+      verbose=true
+      ;;
+    -q|--quiet)
+      verbose=false
+      ;;
+    -d|--debug)
+      set -x
+      debug=true
+      ;;
+    -f|--force)
+      force=true
+      ;;
+    *)
+      echo "unexpected arg: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+log() {
+  if $verbose; then echo "$1"; fi
+}
+
+#sleep 10 # if run at start-up, needs to wait a bit
+dl_dir=$HOME/Pictures/nasa
+cd $dl_dir
+# get the picture of the day file path
+log "getting pic of the day"
+pod=`curl -s https://apod.nasa.gov/apod/astropix.html | grep -m 1 "png\|jpg\|jpeg" | awk -F '"' '{print $2}'`
+log "pic: $pod"
+pod_file=$(basename $pod)
+if [[ $force == "true" || ! -f "$pod_file" ]]; then
+  log "download picture of the day"
+  curl -o "$pod_file" "https://apod.nasa.gov/apod/$pod"
+else
+  log "image file $dl_dir/$pod_file already exists!"
+fi
+log "set as desktop"
+osascript -e "tell application \"System Events\" to tell every desktop to set picture to \"$dl_dir/$pod_file\""
+
