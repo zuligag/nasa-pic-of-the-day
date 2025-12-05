@@ -22,6 +22,9 @@ while (( "$#" )); do
     -f|--force)
       force=true
       ;;
+    -w|--wait)
+      sleep 10 # if run at start-up, needs to wait a bit
+      ;;
     *)
       echo "unexpected arg: $1"
       exit 1
@@ -34,7 +37,6 @@ log() {
   if $verbose; then echo "$1"; fi
 }
 
-#sleep 10 # if run at start-up, needs to wait a bit
 dl_dir=$HOME/Pictures/nasa
 cd $dl_dir
 # get the picture of the day file path
